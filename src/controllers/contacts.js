@@ -27,7 +27,11 @@ export const getContactByIdController = async (req, res) => {
   try {
     const contact = await getContactById(contactId);
     if (!contact) {
-      return res.status(404).json({ message: 'Contact not found' });
+      return res.status(404).json({
+        status: 404,
+        message: 'Contact not found',
+        data: null,
+      });
     }
     return res.status(200).json({
       status: 200,
@@ -35,7 +39,11 @@ export const getContactByIdController = async (req, res) => {
       data: contact,
     });
   } catch (error) {
-    res.status(404).json({ message: 'Contact not found' });
+    return res.status(500).json({
+      status: 500,
+      message: 'Something went wrong',
+      data: contactId,
+    });
   }
 };
 
@@ -59,25 +67,38 @@ export const createContactController = async (req, res) => {
 
 export const patchContactsController = async (req, res, next) => {
   const { contactId } = req.params;
-  const result = updateContacts(contactId, req.body);
-  if (!result) {
-    next(createHttpError(404, `Contact not found`));
-    return;
+  try {
+    const result = await updateContacts(contactId, req.body);
+
+    if (!result) {
+      return res.status(404).json({
+        status: 404,
+        message: 'Contact not found',
+        data: null,
+      });
+    }
+
+    return res.status(200).json({
+      status: 200,
+      message: 'Successfully patched a contact!',
+      data: result,
+    });
+  } catch (error) {
+    return next(error);
   }
-  res.json({
-    status: 200,
-    message: 'Successfully patched a contact!',
-    data: result.contact,
-  });
 };
 
-export const deleteContactController = async (req, res) => {
+export const deleteContactController = async (req, res, next) => {
   const { contactId } = req.params;
-  const contact = await deleteContact(contactId);
-  if (!contact) {
-    next(createHttpError(404, 'contact not found'));
-    return;
-  }
+  try {
+    const contact = await deleteContact(contactId);
 
-  res.status(204).send();
+    if (!contact) {
+      return next(createHttpError(404, 'Contact not found'));
+    }
+
+    return res.status(204).send();
+  } catch (error) {
+    return next(error);
+  }
 };
