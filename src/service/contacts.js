@@ -6,13 +6,8 @@ export const getAllContacts = async () => {
 };
 
 export const getContactById = async (contactId) => {
-  try {
-    const contact = await ContactsCollection.findById(contactId);
-    return contact;
-  } catch (error) {
-    console.log(`Error fetching student by ID:`, error);
-    throw error;
-  }
+  const contact = await ContactsCollection.findById(contactId);
+  return contact;
 };
 
 export const createContact = async (payload) => {
