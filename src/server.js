@@ -1,10 +1,12 @@
 import express from 'express';
+import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import pino from 'pino-http';
 import { env } from './utils/env.js';
-import contactsRouter from './routers/contacts.js';
 import { notFoundHandler } from './middlewares/notFoundHandler.js';
 import { errorHandler } from './middlewares/errorHandler.js';
+import router from './routers/index.js';
+
 const PORT = Number(env('PORT', '3000'));
 
 export const setupServer = async () => {
@@ -16,6 +18,7 @@ export const setupServer = async () => {
     }),
   );
   app.use(cors());
+  app.use(cookieParser());
 
   // app.use(
   //   pino({
@@ -25,13 +28,17 @@ export const setupServer = async () => {
   //   }),
   // );
 
-  app.use(contactsRouter);
+  app.use(router);
+
+  app.use((req, res, next) => {
+    console.log(`${req.method} ${req.url}`); // Лог кожного запиту
+    next();
+  });
 
   app.use(errorHandler);
-
-  app.use('*', notFoundHandler);
 
   app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
   });
+  app.use('*', notFoundHandler);
 };

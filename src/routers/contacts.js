@@ -19,7 +19,7 @@ router.get(
   ctrlWrapper(getContactByIdController),
 );
 router.post(
-  `/contacts`,
+  `/register`,
   validateBody(validationBody),
   ctrlWrapper(createContactController),
 );
