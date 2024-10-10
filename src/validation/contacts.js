@@ -16,6 +16,10 @@ export const validationBody = Joi.object({
   email: Joi.string().email(),
   contactType: Joi.string().valid('work', 'home', 'personal').required(),
   isFavourite: Joi.boolean(),
+  userId: Joi.string().required().messages({
+    'any.required': 'User ID is required',
+    'string.base': 'User ID should be a string',
+  }),
 });
 
 export const updateContactSchema = Joi.object({
@@ -24,4 +28,7 @@ export const updateContactSchema = Joi.object({
   email: Joi.string().email(),
   contactType: Joi.string().valid('work', 'home', 'personal'),
   isFavourite: Joi.boolean(),
+  userId: Joi.string().messages({
+    'string.base': 'User ID should be a string',
+  }),
 });

@@ -8,6 +8,7 @@ import {
 } from '../service/contacts.js';
 import { parsePaginationParams } from '../utils/parsePaginationParams.js';
 import { parseSortParams } from '../utils/parseSortParams.js';
+import { ContactsCollection } from '../db/models/contacts.js';
 
 export const getContactsController = async (req, res, next) => {
   const { page = 1, perPage = 10 } = parsePaginationParams(req.query);
@@ -83,7 +84,7 @@ export const patchContactsController = async (req, res, next) => {
   res.status(200).json({
     status: 200,
     message: 'Successfully patched a contact!',
-    data: updatedContact.contact,
+    data: update,
   });
 };
 
