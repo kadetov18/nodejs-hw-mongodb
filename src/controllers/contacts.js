@@ -18,7 +18,7 @@ export const getContactsController = async (req, res, next) => {
 
   const userId = req.user._id;
 
-  const contacts = await ContactsCollection.find({ userId })
+  const contacts = await ContactsCollection.find()
     .sort({ [sortBy]: sortOrder === 'asc' ? 1 : -1 })
     .skip((page - 1) * perPage)
     .limit(perPage);
