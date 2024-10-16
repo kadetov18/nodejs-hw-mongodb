@@ -5,27 +5,31 @@ import { calculatePaginationData } from '../utils/calculatePaginationData.js';
 export const getAllContacts = async ({
   page = 1,
   perPage = 10,
-  sortOrder = SORT_ORDER.ASC,
+  sortOrder = 'asc',
   sortBy = '_id',
   userId,
 }) => {
-  const limit = perPage;
   const skip = (page - 1) * perPage;
 
   const contactsQuery = ContactsCollection.find({ userId });
-  const contactsCount = await contactsQuery.countDocuments();
+  const totalItems = await contactsQuery.countDocuments();
 
-  const contacts = await contactsQuery
+  const data = await contactsQuery
     .skip(skip)
-    .limit(limit)
-    .sort({ [sortBy]: sortOrder })
+    .limit(perPage)
+    .sort({ [sortBy]: sortOrder === 'asc' ? 1 : -1 })
     .exec();
 
-  const paginationData = calculatePaginationData(contactsCount, perPage, page);
+  const totalPages = Math.ceil(totalItems / perPage);
+  const hasPreviousPage = page > 1;
+  const hasNextPage = page < totalPages;
 
   return {
-    data: contacts,
-    ...paginationData,
+    data,
+    totalItems,
+    totalPages,
+    hasPreviousPage,
+    hasNextPage,
   };
 };
 

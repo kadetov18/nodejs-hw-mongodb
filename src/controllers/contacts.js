@@ -1,4 +1,3 @@
-import createHttpError from 'http-errors';
 import {
   createContact,
   deleteContact,
@@ -6,9 +5,10 @@ import {
   getContactById,
   updateContacts,
 } from '../service/contacts.js';
-import { parsePaginationParams } from '../utils/parsePaginationParams.js';
 import { parseSortParams } from '../utils/parseSortParams.js';
+import createHttpError from 'http-errors';
 import { ContactsCollection } from '../db/models/contacts.js';
+import { parsePaginationParams } from '../utils/parsePaginationParams.js';
 
 export const getContactsController = async (req, res, next) => {
   const { page = 1, perPage = 10 } = parsePaginationParams(req.query);
@@ -18,21 +18,29 @@ export const getContactsController = async (req, res, next) => {
 
   const userId = req.user._id;
 
+  const totalContacts = await ContactsCollection.countDocuments({ userId });
+
   const contacts = await ContactsCollection.find()
     .sort({ [sortBy]: sortOrder === 'asc' ? 1 : -1 })
     .skip((page - 1) * perPage)
     .limit(perPage);
 
-  const totalContacts = await ContactsCollection.countDocuments({ userId });
+  const totalPages = Math.ceil(totalContacts / perPage);
+
+  const hasPreviousPage = page > 1;
+  const hasNextPage = page < totalPages;
 
   res.json({
     status: 200,
     message: 'Successfully found contacts!',
     data: {
-      contacts,
-      total: totalContacts,
+      data: contacts,
       page,
       perPage,
+      totalItems: totalContacts,
+      totalPages,
+      hasPreviousPage,
+      hasNextPage,
     },
   });
 };
