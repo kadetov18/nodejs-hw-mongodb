@@ -5,10 +5,13 @@ import {
   getContactById,
   updateContacts,
 } from '../service/contacts.js';
+import { saveFileToCloudinary } from '../utils/saveFileToCloudinary.js';
+import { env } from '../utils/env.js';
 import { parseSortParams } from '../utils/parseSortParams.js';
 import createHttpError from 'http-errors';
 import { ContactsCollection } from '../db/models/contacts.js';
 import { parsePaginationParams } from '../utils/parsePaginationParams.js';
+import { saveFileToUploadDir } from '../utils/saveFileToUploadDir.js';
 
 export const getContactsController = async (req, res, next) => {
   const { page = 1, perPage = 10 } = parsePaginationParams(req.query);
@@ -83,6 +86,27 @@ export const patchContactsController = async (req, res, next) => {
   const { contactId } = req.params;
   const update = req.body;
   const userId = req.user._id;
+  const photo = req.file;
+
+  let photoUrl;
+
+  if (photo) {
+    if (env('ENABLE_CLOUDINAR') === 'true') {
+      photoUrl = await saveFileToCloudinary(photo);
+    } else {
+      photoUrl = await saveFileToUploadDir(photo);
+    }
+  }
+
+  const result = await updateStudent(contactId, {
+    ...req.body,
+    photo: photoUrl,
+  });
+
+  if (!result) {
+    next(createHttpError(404, 'Student not found'));
+    return;
+  }
 
   const updatedContact = await updateContacts(contactId, userId, update);
   if (!updatedContact) {
